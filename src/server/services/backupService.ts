@@ -1,6 +1,7 @@
 import { asc, eq } from 'drizzle-orm';
 import cron from 'node-cron';
 import { db, schema } from '../db/index.js';
+import { insertAndFetchById } from '../db/insertAndFetchById.js';
 import { upsertSetting } from '../db/upsertSetting.js';
 import { mergeAccountExtraConfig } from './accountExtraConfig.js';
 import { getOauthInfoFromAccount } from './oauth/oauthAccount.js';
@@ -1722,7 +1723,7 @@ async function importAccountsSection(section: AccountsBackupSection): Promise<vo
         const normalizedKey = asString(row.key);
         if (!normalizedKey) continue;
         const runtimeDownstream = runtimeState.downstreamApiKeyRuntimeByKey.get(normalizedKey);
-        const insertedKey = await tx.insert(schema.downstreamApiKeys).values({
+        const insertedKey = await insertAndFetchById(schema.downstreamApiKeys, {
           name: row.name,
           key: normalizedKey,
           description: row.description ?? null,
@@ -1738,7 +1739,7 @@ async function importAccountsSection(section: AccountsBackupSection): Promise<vo
           allowedRouteIds: row.allowedRouteIds ?? null,
           siteWeightMultipliers: row.siteWeightMultipliers ?? null,
           lastUsedAt: runtimeDownstream?.lastUsedAt ?? row.lastUsedAt ?? null,
-        }).returning({ id: schema.downstreamApiKeys.id }).get();
+        }, tx);
         downstreamApiKeyIdByKey.set(normalizedKey, insertedKey.id);
       }
     }
