@@ -22,6 +22,13 @@ describe('runtimeDatabaseBootstrap', () => {
     expect(runSqliteMigrations).toHaveBeenCalledTimes(1);
   });
 
+  it('does not rerun sqlite migrations after the first bootstrap in the same process', async () => {
+    await runSqliteRuntimeMigrations();
+    await runSqliteRuntimeMigrations();
+
+    expect(runSqliteMigrations).toHaveBeenCalledTimes(1);
+  });
+
   it('runs sqlite runtime migrations when dialect is sqlite', async () => {
     const runSqliteRuntimeMigrations = vi.fn(async () => {});
     const ensureExternalRuntimeSchema = vi.fn(async () => {});
