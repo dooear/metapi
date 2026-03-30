@@ -1,5 +1,6 @@
 import { and, eq, sql } from 'drizzle-orm';
 import { db, schema } from '../../db/index.js';
+import { insertAndFetchById } from '../../db/insertAndFetchById.js';
 import { listOAuthProviderDefinitions, type OAuthProviderDefinition } from './providers.js';
 
 function isUniqueConstraintError(error: unknown): boolean {
@@ -26,7 +27,7 @@ export async function ensureOauthProviderSite(definition: OAuthProviderDefinitio
   if (existing) return existing;
 
   try {
-    return await db.insert(schema.sites).values({
+    return await insertAndFetchById(schema.sites, {
       name: definition.site.name,
       url: definition.site.url,
       platform: definition.site.platform,
@@ -35,7 +36,7 @@ export async function ensureOauthProviderSite(definition: OAuthProviderDefinitio
       isPinned: false,
       globalWeight: 1,
       sortOrder: await getNextSiteSortOrder(),
-    }).returning().get();
+    });
   } catch (error) {
     if (!isUniqueConstraintError(error)) throw error;
     const recovered = await db.select().from(schema.sites).where(and(
