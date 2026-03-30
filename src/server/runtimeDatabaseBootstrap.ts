@@ -6,11 +6,12 @@ import {
 let sqliteMigrationsBootstrapped = false;
 
 export async function runSqliteRuntimeMigrations(): Promise<void> {
-  const migrateModule = await import('./db/migrate.js');
-  if (!sqliteMigrationsBootstrapped) {
-    sqliteMigrationsBootstrapped = true;
+  if (sqliteMigrationsBootstrapped) {
+    return;
   }
+  const migrateModule = await import('./db/migrate.js');
   migrateModule.runSqliteMigrations();
+  sqliteMigrationsBootstrapped = true;
 }
 
 type EnsureRuntimeDatabaseReadyInput = {
