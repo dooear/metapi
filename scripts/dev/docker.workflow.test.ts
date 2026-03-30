@@ -32,4 +32,11 @@ describe('docker workflows', () => {
     expect(dockerfile).toContain('RUN npm run build:web && npm run build:server');
     expect(dockerfile).toContain('npm prune --omit=dev --no-audit --no-fund');
   });
+
+  it('starts the server directly so external databases do not run sqlite migrations first', () => {
+    const dockerfile = readFileSync(resolve(process.cwd(), 'docker/Dockerfile'), 'utf8');
+
+    expect(dockerfile).toContain('CMD ["node", "dist/server/index.js"]');
+    expect(dockerfile).not.toContain('node dist/server/db/migrate.js');
+  });
 });
