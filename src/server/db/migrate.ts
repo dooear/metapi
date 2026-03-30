@@ -580,6 +580,11 @@ function bootstrapLegacyDrizzleMigrations(sqlite: Database.Database, migrationsF
 }
 
 export function runSqliteMigrations(): void {
+  if (config.dbType !== 'sqlite') {
+    console.log(`[db] Skipping sqlite migrations because DB_TYPE=${config.dbType}.`);
+    return;
+  }
+
   const dbPath = resolveSqliteDbPath();
   const migrationsFolder = resolveMigrationsFolder();
   if (dbPath !== ':memory:') {
@@ -610,4 +615,6 @@ export function runSqliteMigrations(): void {
   console.log('Migration complete.');
 }
 
-runSqliteMigrations();
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  runSqliteMigrations();
+}
