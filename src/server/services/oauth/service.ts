@@ -1,5 +1,6 @@
 import { and, desc, eq, inArray, isNull, or, sql } from 'drizzle-orm';
 import { db, schema } from '../../db/index.js';
+import { insertAndFetchById } from '../../db/insertAndFetchById.js';
 import { getProxyUrlFromExtraConfig, mergeAccountExtraConfig } from '../accountExtraConfig.js';
 import { refreshModelsForAccount } from '../modelService.js';
 import * as routeRefreshWorkflow from '../routeRefreshWorkflow.js';
@@ -255,7 +256,7 @@ async function upsertOauthAccount(input: {
     };
   }
 
-  const created = await db.insert(schema.accounts).values({
+  const created = await insertAndFetchById(schema.accounts, {
     siteId: site.id,
     username,
     accessToken: input.exchange.accessToken,
@@ -268,7 +269,7 @@ async function upsertOauthAccount(input: {
     extraConfig,
     isPinned: false,
     sortOrder: await getNextAccountSortOrder(),
-  }).returning().get();
+  });
   return { account: created, site, created: true, previousAccount: null };
 }
 
