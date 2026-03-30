@@ -1,5 +1,6 @@
 import { and, asc, eq } from 'drizzle-orm';
 import { db, schema } from '../db/index.js';
+import { insertAndFetchById } from '../db/insertAndFetchById.js';
 import { getAdapter } from './platforms/index.js';
 import { sendNotification } from './notifyService.js';
 import { formatUtcSqlDateTime } from './localTimeService.js';
@@ -125,12 +126,12 @@ export async function syncSiteAnnouncements(options?: { siteId?: number | null }
           continue;
         }
 
-        const inserted = await db.insert(schema.siteAnnouncements).values({
+        const inserted = await insertAndFetchById(schema.siteAnnouncements, {
           siteId: site.id,
           sourceKey: announcement.sourceKey,
           firstSeenAt: seenAt,
           ...patch,
-        }).returning().get();
+        });
         result.inserted += 1;
 
         const title = `站点公告：${site.name}`;
